@@ -4,13 +4,14 @@ import user from '../img/user.png'
 import '../App.css'
 import Swal from 'sweetalert2'
 import { auth, db } from '../firebase'
+import { withRouter } from 'react-router-dom'
 
-const Login = () => {
+const Login = props => {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [confpass, setConfPass] = useState('')
   const [error, setError] = useState(null)
-  const [esRegistro, setEsRegistro] = useState(true)
+  const [esRegistro, setEsRegistro] = useState(false)
 
   const noemail = () => {
     Swal.fire({
@@ -48,6 +49,33 @@ const Login = () => {
     })
   }
 
+  const noRegEmail = () => {
+    Swal.fire({
+      icon: 'error',
+      title: 'Usuario no valido',
+      showConfirmButton: false,
+      timer: 1500
+    })
+  }
+
+  const noRegPass = () => {
+    Swal.fire({
+      icon: 'error',
+      title: 'Incorrecta la contaseña',
+      showConfirmButton: false,
+      timer: 1500
+    })
+  }
+
+  const noUser = () => {
+    Swal.fire({
+      icon: 'error',
+      title: 'El Usuario No existe',
+      showConfirmButton: false,
+      timer: 1500
+    })
+  }
+
   // verificación de input vacios
 
   const procesarDatos = e => {
@@ -76,8 +104,36 @@ const Login = () => {
       verificar()
       registrar()
       return
+    } else {
+      login()
     }
   }
+
+  const login = React.useCallback(async () => {
+    try {
+      const res = await auth.signInWithEmailAndPassword(email, pass)
+      console.log(res.user)
+      setEmail('')
+      setPass('')
+      setError(null)
+
+      props.history.push('/admin')
+    } catch (error) {
+      console.log(error)
+
+      if (error.code === 'auth/invalid-email') {
+        noRegEmail()
+      }
+
+      if (error.code === 'auth/wrong-password') {
+        noRegPass()
+      }
+
+      if (error.code === 'auth/user-not-found') {
+        noUser()
+      }
+    }
+  }, [email, pass, props.history])
 
   const verificar = () => {
     if (pass !== confpass) {
@@ -98,7 +154,19 @@ const Login = () => {
           uid: res.user.uid
         })
 
-      console.log(res.user.saldo)
+      await db.collection(res.user.uid).add({
+        btc: 0.0,
+        eth: 0.0,
+        usd: 0.0,
+        mxn: 0.0,
+        otros: 0.0
+      })
+
+      setEmail('')
+      setPass('')
+      setError(null)
+
+      props.history.push('/admin')
     } catch (error) {
       console.log(error)
       if (error.code === 'auth/invalid-email') {
@@ -112,7 +180,7 @@ const Login = () => {
         setError('El password no es igual')
       }
     }
-  }, [email, confpass])
+  }, [email, confpass, props.history])
 
   return (
     <Fragment>
@@ -176,4 +244,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default withRouter(Login)

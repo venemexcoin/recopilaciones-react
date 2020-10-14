@@ -1,0 +1,40 @@
+main > * {
+  background: rgb(79, 79, 245);
+  padding: 10px;
+  font-size: 2em;
+  margin: 0 2% 0;
+}
+
+/* Definicon de GRID Movil */
+
+main {
+  display: grid;
+  grid-gap: 20px;
+  grid-template-areas:
+    'header'
+    'izquierdo'
+    'contenido'
+    'footer';
+}
+
+@media (min-width: 500px) {
+  main {
+    grid-template-areas:
+      'header header header'
+      'izquierdo contenido contenido'
+      'footer footer footer';
+  }
+}
+
+header {
+  grid-area: header;
+}
+aside {
+  grid-area: izquierdo;
+}
+article {
+  grid-area: contenido;
+}
+footer {
+  grid-area: footer;
+}
